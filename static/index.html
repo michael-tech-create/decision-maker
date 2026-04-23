@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micheal Bot</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>Micheal Decision Bot</h2>
+            <p>Ready to help you decide...</p>
+        </div>
+        <div id="chat-window" class="chat-window">
+            <div class="message bot">Micheal: Hello! Type "bored" or ask me a question.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Type a message..." onkeypress="handleKey(event)">
+            <button onclick="askMicheal()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        async function askMicheal() {
+            const inputField = document.getElementById("user-input");
+            const chatWindow = document.getElementById("chat-window");
+            const message = inputField.value.trim();
+            if (!message) return;
+
+            // 1. Add User Message to UI
+            appendMessage("user", "You: " + message);
+            inputField.value = "";
+
+            // 2. Show Thinking State
+            const thinkingDiv = appendMessage("bot", "Micheal is thinking...");
+
+            // 3. Fetch from Go API
+            try {
+                const response = await fetch("/api/decision", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                thinkingDiv.innerText = data.reply; // Replace thinking with real reply
+            } catch (err) {
+                thinkingDiv.innerText = "Micheal: Sorry, my brain is offline!";
+            }
+        }
+
+        function appendMessage(sender, text) {
+            const chatWindow = document.getElementById("chat-window");
+            const div = document.createElement("div");
+            div.className = "message " + sender;
+            div.innerText = text;
+            chatWindow.appendChild(div);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+            return div;
+        }
+
+        function handleKey(e) { if (e.key === 'Enter') askMicheal(); }
+    </script>
+</body>
+</html>
